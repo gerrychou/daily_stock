@@ -1,0 +1,39 @@
+name: Daily Stock K Charts
+
+on:
+  schedule:
+    - cron: '7 15 * * 1-5'
+      timezone: "Asia/Taipei"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install packages
+        run: pip install -r requirements.txt
+
+      - name: Generate stock charts
+        run: python generate_png.py
+
+      - name: Upload PNG files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-stock-charts
+          path: output/
+          retention-days: 7
+          if-no-files-found: warn
